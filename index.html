@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Builder</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Resume Builder</h1>
+      <p>Create a polished resume, preview it live, and download as PDF.</p>
+    </header>
+
+    <main class="app-layout">
+      <section class="panel form-panel" aria-label="Resume form inputs">
+        <h2>Resume Details</h2>
+        <form id="resumeForm" autocomplete="on">
+          <div class="field-group">
+            <label for="fullName">Full Name</label>
+            <input id="fullName" name="fullName" type="text" placeholder="Jane Doe" />
+          </div>
+
+          <div class="field-group">
+            <label for="jobTitle">Job Title</label>
+            <input id="jobTitle" name="jobTitle" type="text" placeholder="Frontend Developer" />
+          </div>
+
+          <div class="split-fields">
+            <div class="field-group">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" placeholder="jane@example.com" />
+            </div>
+
+            <div class="field-group">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" placeholder="+1 (555) 123-4567" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="summary">Summary</label>
+            <textarea id="summary" name="summary" rows="4" placeholder="Write a concise professional summary."></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="skills">Skills (one per line)</label>
+            <textarea id="skills" name="skills" rows="4" placeholder="JavaScript&#10;CSS&#10;React"></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="education">Education (one entry per paragraph)</label>
+            <textarea id="education" name="education" rows="5" placeholder="B.Sc. in Computer Science - XYZ University (2018 - 2022)"></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="experience">Work Experience (one entry per paragraph)</label>
+            <textarea id="experience" name="experience" rows="6" placeholder="Frontend Developer - ABC Corp (2022 - Present)&#10;Built reusable UI components and improved performance."></textarea>
+          </div>
+
+          <div class="field-group">
+            <label for="projects">Projects (one entry per paragraph)</label>
+            <textarea id="projects" name="projects" rows="5" placeholder="Resume Builder App - HTML/CSS/JS&#10;Built a client-side tool with live preview and PDF export."></textarea>
+          </div>
+
+          <div class="actions">
+            <button type="button" id="downloadPdfBtn" class="btn-primary">Download PDF</button>
+            <button type="button" id="clearDataBtn" class="btn-secondary">Clear Saved Data</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel preview-panel" aria-label="Live resume preview">
+        <div id="resumePreview" class="resume-paper">
+          <header class="resume-header">
+            <h1 id="previewFullName">Your Name</h1>
+            <h2 id="previewJobTitle">Your Job Title</h2>
+            <p class="contact-line">
+              <span id="previewEmail">your.email@example.com</span>
+              <span class="dot">•</span>
+              <span id="previewPhone">+1 (000) 000-0000</span>
+            </p>
+          </header>
+
+          <section class="resume-section">
+            <h3>Summary</h3>
+            <p id="previewSummary" class="preview-text">Your professional summary will appear here.</p>
+          </section>
+
+          <section class="resume-section">
+            <h3>Skills</h3>
+            <ul id="previewSkills" class="bullet-list">
+              <li>Add skills in the form.</li>
+            </ul>
+          </section>
+
+          <section class="resume-section">
+            <h3>Education</h3>
+            <div id="previewEducation" class="entry-list">
+              <p>Add education details in the form.</p>
+            </div>
+          </section>
+
+          <section class="resume-section">
+            <h3>Work Experience</h3>
+            <div id="previewExperience" class="entry-list">
+              <p>Add work experience in the form.</p>
+            </div>
+          </section>
+
+          <section class="resume-section">
+            <h3>Projects</h3>
+            <div id="previewProjects" class="entry-list">
+              <p>Add project details in the form.</p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNa5P7wP6A7j+M3Q4ik8QxSNaben7nuPhYu95LjzqS4I2oXeB9lnAaPDXmgZxziWSi0KWs/oUNsGrD/qjUKPTA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmN2ASzdg3NofM8JrIoYNewc0hXtOD87o5iV/mQJu1WDVYj1WFJsbgx5caX5/C/POb44IVd831ydb9h9NPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
