@@ -1,208 +1,488 @@
-const STORAGE_KEY = "resumeBuilderDataV1";
+// 1) Tic-Tac-Toe
+const tttBoard = document.getElementById("tttBoard");
+const tttStatus = document.getElementById("tttStatus");
+const tttReset = document.getElementById("tttReset");
+let tttState = Array(9).fill("");
+let tttTurn = "X";
+let tttDone = false;
 
-// Centralized default placeholder text for cleaner preview updates.
-const placeholders = {
-  fullName: "Your Name",
-  jobTitle: "Your Job Title",
-  email: "your.email@example.com",
-  phone: "+1 (000) 000-0000",
-  summary: "Your professional summary will appear here.",
-  skills: ["Add skills in the form."],
-  education: ["Add education details in the form."],
-  experience: ["Add work experience in the form."],
-  projects: ["Add project details in the form."],
-};
-
-const form = document.getElementById("resumeForm");
-const downloadPdfBtn = document.getElementById("downloadPdfBtn");
-const clearDataBtn = document.getElementById("clearDataBtn");
-const resumePreview = document.getElementById("resumePreview");
-
-const previewRefs = {
-  fullName: document.getElementById("previewFullName"),
-  jobTitle: document.getElementById("previewJobTitle"),
-  email: document.getElementById("previewEmail"),
-  phone: document.getElementById("previewPhone"),
-  summary: document.getElementById("previewSummary"),
-  skills: document.getElementById("previewSkills"),
-  education: document.getElementById("previewEducation"),
-  experience: document.getElementById("previewExperience"),
-  projects: document.getElementById("previewProjects"),
-};
-
-function getFormData() {
-  // Convert current form data to a plain object for easy storage/update usage.
-  return {
-    fullName: form.fullName.value.trim(),
-    jobTitle: form.jobTitle.value.trim(),
-    email: form.email.value.trim(),
-    phone: form.phone.value.trim(),
-    summary: form.summary.value.trim(),
-    skills: form.skills.value.trim(),
-    education: form.education.value.trim(),
-    experience: form.experience.value.trim(),
-    projects: form.projects.value.trim(),
-  };
-}
-
-function splitEntries(multilineText) {
-  // Split by lines and keep only non-empty entries.
-  return multilineText
-    .split("\n")
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function splitParagraphs(paragraphText) {
-  // Paragraph blocks are separated by one or more blank lines.
-  return paragraphText
-    .split(/\n\s*\n/)
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function renderList(container, items, fallbackItems) {
-  container.innerHTML = "";
-  const finalItems = items.length ? items : fallbackItems;
-
-  finalItems.forEach((item) => {
-    const li = document.createElement("li");
-    li.textContent = item;
-    container.appendChild(li);
-  });
-}
-
-function renderParagraphs(container, items, fallbackItems) {
-  container.innerHTML = "";
-  const finalItems = items.length ? items : fallbackItems;
-
-  finalItems.forEach((item) => {
-    const p = document.createElement("p");
-    p.textContent = item;
-    container.appendChild(p);
-  });
-}
-
-function updatePreview() {
-  const data = getFormData();
-
-  previewRefs.fullName.textContent = data.fullName || placeholders.fullName;
-  previewRefs.jobTitle.textContent = data.jobTitle || placeholders.jobTitle;
-  previewRefs.email.textContent = data.email || placeholders.email;
-  previewRefs.phone.textContent = data.phone || placeholders.phone;
-  previewRefs.summary.textContent = data.summary || placeholders.summary;
-
-  renderList(previewRefs.skills, splitEntries(data.skills), placeholders.skills);
-  renderParagraphs(
-    previewRefs.education,
-    splitParagraphs(data.education),
-    placeholders.education
-  );
-  renderParagraphs(
-    previewRefs.experience,
-    splitParagraphs(data.experience),
-    placeholders.experience
-  );
-  renderParagraphs(
-    previewRefs.projects,
-    splitParagraphs(data.projects),
-    placeholders.projects
-  );
-}
-
-function saveToLocalStorage() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getFormData()));
-}
-
-function loadFromLocalStorage() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return;
-
-  try {
-    const saved = JSON.parse(raw);
-
-    // Restore only known fields to prevent accidental key pollution.
-    [
-      "fullName",
-      "jobTitle",
-      "email",
-      "phone",
-      "summary",
-      "skills",
-      "education",
-      "experience",
-      "projects",
-    ].forEach((key) => {
-      if (typeof saved[key] === "string") {
-        form[key].value = saved[key];
+function renderTTT() {
+  tttBoard.innerHTML = "";
+  tttState.forEach((v, i) => {
+    const b = document.createElement("button");
+    b.className = "ttt-cell";
+    b.textContent = v;
+    b.addEventListener("click", () => {
+      if (tttDone || tttState[i]) return;
+      tttState[i] = tttTurn;
+      const winLines = [
+        [0, 1, 2], [3, 4, 5], [6, 7, 8],
+        [0, 3, 6], [1, 4, 7], [2, 5, 8],
+        [0, 4, 8], [2, 4, 6],
+      ];
+      const win = winLines.some(([a, c, d]) => tttState[a] && tttState[a] === tttState[c] && tttState[c] === tttState[d]);
+      if (win) {
+        tttStatus.textContent = `${tttTurn} wins!`;
+        tttDone = true;
+      } else if (tttState.every(Boolean)) {
+        tttStatus.textContent = "Draw.";
+        tttDone = true;
+      } else {
+        tttTurn = tttTurn === "X" ? "O" : "X";
+        tttStatus.textContent = `Turn: ${tttTurn}`;
       }
+      renderTTT();
     });
-  } catch (error) {
-    console.warn("Could not restore saved resume data:", error);
-  }
-}
-
-async function downloadPdf() {
-  const { jsPDF } = window.jspdf;
-  const paperRect = resumePreview.getBoundingClientRect();
-
-  // Render the preview area to a high-resolution canvas for a crisp PDF.
-  const canvas = await html2canvas(resumePreview, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    width: Math.ceil(paperRect.width),
-    height: Math.ceil(paperRect.height),
+    tttBoard.appendChild(b);
   });
-
-  const imgData = canvas.toDataURL("image/png");
-  const pdf = new jsPDF("p", "mm", "a4");
-
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-
-  const imgWidth = pageWidth;
-  const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-  let position = 0;
-  let heightLeft = imgHeight;
-
-  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-  heightLeft -= pageHeight;
-
-  // If content overflows, continue on additional pages.
-  while (heightLeft > 0) {
-    position = heightLeft - imgHeight;
-    pdf.addPage();
-    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-    heightLeft -= pageHeight;
-  }
-
-  const fullName = form.fullName.value.trim().replace(/\s+/g, "-") || "resume";
-  pdf.save(`${fullName}.pdf`);
 }
-
-function clearSavedData() {
-  localStorage.removeItem(STORAGE_KEY);
-  form.reset();
-  updatePreview();
+function resetTTT() {
+  tttState = Array(9).fill("");
+  tttTurn = "X";
+  tttDone = false;
+  tttStatus.textContent = "Turn: X";
+  renderTTT();
 }
+tttReset.addEventListener("click", resetTTT);
+resetTTT();
 
-// Persist + render every time user changes an input to keep preview live.
-form.addEventListener("input", () => {
-  saveToLocalStorage();
-  updatePreview();
-});
-
-downloadPdfBtn.addEventListener("click", () => {
-  downloadPdf().catch((error) => {
-    console.error("PDF generation failed:", error);
-    alert("Sorry, PDF generation failed. Please try again.");
+// 2) Rock Paper Scissors
+const rpsStatus = document.getElementById("rpsStatus");
+const rpsScore = document.getElementById("rpsScore");
+let rps = { win: 0, lose: 0, draw: 0 };
+rpsStatus.textContent = "Choose a move to start.";
+rpsScore.textContent = "W:0 L:0 D:0";
+document.querySelectorAll(".rps-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    const user = btn.dataset.move;
+    const moves = ["rock", "paper", "scissors"];
+    const cpu = moves[Math.floor(Math.random() * 3)];
+    if (user === cpu) rps.draw += 1;
+    else if ((user === "rock" && cpu === "scissors") || (user === "paper" && cpu === "rock") || (user === "scissors" && cpu === "paper")) rps.win += 1;
+    else rps.lose += 1;
+    rpsStatus.textContent = `You: ${user} | CPU: ${cpu}`;
+    rpsScore.textContent = `W:${rps.win} L:${rps.lose} D:${rps.draw}`;
   });
 });
 
-clearDataBtn.addEventListener("click", clearSavedData);
+// 3) Hangman
+const words = ["javascript", "browser", "canvas", "puzzle", "developer"];
+const hangmanWord = document.getElementById("hangmanWord");
+const hangmanInfo = document.getElementById("hangmanInfo");
+const hangmanInput = document.getElementById("hangmanInput");
+let target = "";
+let guessed = new Set();
+let lives = 6;
+function resetHangman() {
+  target = words[Math.floor(Math.random() * words.length)];
+  guessed = new Set();
+  lives = 6;
+  renderHangman();
+}
+function renderHangman() {
+  const shown = target.split("").map((ch) => (guessed.has(ch) ? ch : "_")).join(" ");
+  hangmanWord.textContent = shown;
+  if (!shown.includes("_")) hangmanInfo.textContent = "You won!";
+  else if (lives <= 0) hangmanInfo.textContent = `You lost. Word: ${target}`;
+  else hangmanInfo.textContent = `Lives: ${lives}`;
+}
+document.getElementById("hangmanGuess").addEventListener("click", () => {
+  const ch = hangmanInput.value.toLowerCase().trim();
+  hangmanInput.value = "";
+  if (!/^[a-z]$/.test(ch) || lives <= 0) return;
+  if (guessed.has(ch)) return;
+  guessed.add(ch);
+  if (!target.includes(ch)) lives -= 1;
+  renderHangman();
+});
+hangmanInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") document.getElementById("hangmanGuess").click();
+});
+document.getElementById("hangmanReset").addEventListener("click", resetHangman);
+resetHangman();
 
-// Initial boot sequence.
-loadFromLocalStorage();
-updatePreview();
+// 4) Memory Match
+const memoryBoard = document.getElementById("memoryBoard");
+const memoryStatus = document.getElementById("memoryStatus");
+let memValues = [];
+let memOpen = [];
+let memDone = new Set();
+let memMoves = 0;
+function resetMemory() {
+  const vals = ["A", "B", "C", "D", "E", "F", "G", "H"];
+  memValues = [...vals, ...vals].sort(() => Math.random() - 0.5);
+  memOpen = [];
+  memDone = new Set();
+  memMoves = 0;
+  renderMemory();
+}
+function renderMemory() {
+  memoryBoard.innerHTML = "";
+  memValues.forEach((v, i) => {
+    const b = document.createElement("button");
+    const show = memDone.has(i) || memOpen.includes(i);
+    b.className = `memory-card ${show ? "revealed" : ""}`;
+    b.textContent = show ? v : "?";
+    b.addEventListener("click", () => {
+      if (show || memOpen.length === 2) return;
+      memOpen.push(i);
+      if (memOpen.length === 2) {
+        memMoves += 1;
+        const [a, c] = memOpen;
+        if (memValues[a] === memValues[c]) {
+          memDone.add(a);
+          memDone.add(c);
+          memOpen = [];
+        } else {
+          setTimeout(() => {
+            memOpen = [];
+            renderMemory();
+          }, 500);
+        }
+      }
+      renderMemory();
+    });
+    memoryBoard.appendChild(b);
+  });
+  memoryStatus.textContent = memDone.size === memValues.length ? `Completed in ${memMoves} moves!` : `Moves: ${memMoves}`;
+}
+document.getElementById("memoryReset").addEventListener("click", resetMemory);
+resetMemory();
+
+// 5) Number Guess
+const guessInput = document.getElementById("guessInput");
+const guessStatus = document.getElementById("guessStatus");
+let guessTarget = 0;
+let guessCount = 0;
+function resetGuess() {
+  guessTarget = Math.floor(Math.random() * 100) + 1;
+  guessCount = 0;
+  guessStatus.textContent = "";
+}
+document.getElementById("guessBtn").addEventListener("click", () => {
+  const n = Number(guessInput.value);
+  if (!n || n < 1 || n > 100) return;
+  guessCount += 1;
+  if (n === guessTarget) guessStatus.textContent = `Correct in ${guessCount} tries!`;
+  else guessStatus.textContent = n < guessTarget ? "Too low." : "Too high.";
+});
+guessInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") document.getElementById("guessBtn").click();
+});
+document.getElementById("guessReset").addEventListener("click", resetGuess);
+resetGuess();
+
+// 6) Whac-a-Mole
+const moleBoard = document.getElementById("moleBoard");
+const moleStatus = document.getElementById("moleStatus");
+let moleScore = 0;
+let moleTimer = null;
+let moleTick = null;
+const moleHoles = [];
+for (let i = 0; i < 9; i += 1) {
+  const b = document.createElement("button");
+  b.className = "mole-hole";
+  b.addEventListener("click", () => {
+    if (b.classList.contains("active")) {
+      moleScore += 1;
+      b.classList.remove("active");
+      moleStatus.textContent = `Score: ${moleScore}`;
+    }
+  });
+  moleHoles.push(b);
+  moleBoard.appendChild(b);
+}
+document.getElementById("moleStart").addEventListener("click", () => {
+  clearInterval(moleTick);
+  clearTimeout(moleTimer);
+  moleScore = 0;
+  moleStatus.textContent = "Score: 0";
+  moleTick = setInterval(() => {
+    moleHoles.forEach((h) => h.classList.remove("active"));
+    const idx = Math.floor(Math.random() * moleHoles.length);
+    moleHoles[idx].classList.add("active");
+  }, 550);
+  moleTimer = setTimeout(() => {
+    clearInterval(moleTick);
+    moleHoles.forEach((h) => h.classList.remove("active"));
+    moleStatus.textContent = `Round over! Final score: ${moleScore}`;
+  }, 20000);
+});
+
+// 7) Snake
+const snakeCanvas = document.getElementById("snakeCanvas");
+const snakeStatus = document.getElementById("snakeStatus");
+const sctx = snakeCanvas.getContext("2d");
+const grid = 12;
+let snake = [{ x: 5, y: 5 }];
+let dir = { x: 1, y: 0 };
+let food = { x: 8, y: 8 };
+let snakeLoop = null;
+let snakeScore = 0;
+function setSnakeDirection(next) {
+  if (next === "up" && dir.y !== 1) dir = { x: 0, y: -1 };
+  if (next === "down" && dir.y !== -1) dir = { x: 0, y: 1 };
+  if (next === "left" && dir.x !== 1) dir = { x: -1, y: 0 };
+  if (next === "right" && dir.x !== -1) dir = { x: 1, y: 0 };
+}
+function placeFood() {
+  food = { x: Math.floor(Math.random() * grid), y: Math.floor(Math.random() * grid) };
+}
+function drawSnake() {
+  sctx.clearRect(0, 0, 240, 240);
+  sctx.fillStyle = "#16a34a";
+  snake.forEach((p) => sctx.fillRect(p.x * 20, p.y * 20, 18, 18));
+  sctx.fillStyle = "#dc2626";
+  sctx.fillRect(food.x * 20, food.y * 20, 18, 18);
+}
+function stepSnake() {
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+  if (head.x < 0 || head.y < 0 || head.x >= grid || head.y >= grid || snake.some((p) => p.x === head.x && p.y === head.y)) {
+    snakeStatus.textContent = `Game over. Score: ${snakeScore}`;
+    clearInterval(snakeLoop);
+    return;
+  }
+  snake.unshift(head);
+  if (head.x === food.x && head.y === food.y) {
+    snakeScore += 1;
+    placeFood();
+  } else snake.pop();
+  snakeStatus.textContent = `Score: ${snakeScore}`;
+  drawSnake();
+}
+function resetSnake() {
+  clearInterval(snakeLoop);
+  snake = [{ x: 5, y: 5 }];
+  dir = { x: 1, y: 0 };
+  snakeScore = 0;
+  placeFood();
+  snakeStatus.textContent = "Score: 0";
+  drawSnake();
+  snakeLoop = setInterval(stepSnake, 180);
+}
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowUp") setSnakeDirection("up");
+  if (e.key === "ArrowDown") setSnakeDirection("down");
+  if (e.key === "ArrowLeft") setSnakeDirection("left");
+  if (e.key === "ArrowRight") setSnakeDirection("right");
+});
+document.querySelectorAll(".dpad-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setSnakeDirection(btn.dataset.dir));
+});
+document.getElementById("snakeReset").addEventListener("click", resetSnake);
+resetSnake();
+
+// 8) 2048
+const grid2048 = document.getElementById("grid2048");
+const status2048 = document.getElementById("status2048");
+const game2048Card = document.getElementById("card2048");
+let board2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+function addTile2048() {
+  const empty = [];
+  for (let r = 0; r < 4; r += 1) for (let c = 0; c < 4; c += 1) if (!board2048[r][c]) empty.push([r, c]);
+  if (!empty.length) return;
+  const [r, c] = empty[Math.floor(Math.random() * empty.length)];
+  board2048[r][c] = Math.random() < 0.9 ? 2 : 4;
+}
+function compress(row) {
+  const arr = row.filter(Boolean);
+  for (let i = 0; i < arr.length - 1; i += 1) {
+    if (arr[i] === arr[i + 1]) {
+      arr[i] *= 2;
+      arr[i + 1] = 0;
+    }
+  }
+  return [...arr.filter(Boolean), ...Array(4 - arr.filter(Boolean).length).fill(0)];
+}
+function move2048(dirKey) {
+  const old = JSON.stringify(board2048);
+  if (dirKey === "ArrowLeft") board2048 = board2048.map((r) => compress(r));
+  if (dirKey === "ArrowRight") board2048 = board2048.map((r) => compress([...r].reverse()).reverse());
+  if (dirKey === "ArrowUp") {
+    for (let c = 0; c < 4; c += 1) {
+      const col = compress([board2048[0][c], board2048[1][c], board2048[2][c], board2048[3][c]]);
+      for (let r = 0; r < 4; r += 1) board2048[r][c] = col[r];
+    }
+  }
+  if (dirKey === "ArrowDown") {
+    for (let c = 0; c < 4; c += 1) {
+      const col = compress([board2048[3][c], board2048[2][c], board2048[1][c], board2048[0][c]]).reverse();
+      for (let r = 0; r < 4; r += 1) board2048[r][c] = col[r];
+    }
+  }
+  if (JSON.stringify(board2048) !== old) addTile2048();
+  render2048();
+}
+function render2048() {
+  grid2048.innerHTML = "";
+  let max = 0;
+  board2048.flat().forEach((v) => {
+    const d = document.createElement("div");
+    d.className = "tile-2048";
+    d.textContent = v || "";
+    grid2048.appendChild(d);
+    if (v > max) max = v;
+  });
+  status2048.textContent = `Top tile: ${max || 0}`;
+}
+function reset2048() {
+  board2048 = Array.from({ length: 4 }, () => Array(4).fill(0));
+  addTile2048();
+  addTile2048();
+  render2048();
+}
+document.getElementById("reset2048").addEventListener("click", reset2048);
+document.querySelectorAll(".dpad2048-btn").forEach((btn) => {
+  const map = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight" };
+  btn.addEventListener("click", () => move2048(map[btn.dataset.dir]));
+});
+reset2048();
+
+// 9) Minesweeper
+const mineBoard = document.getElementById("mineBoard");
+const mineStatus = document.getElementById("mineStatus");
+let mineData = [];
+let mineOpenCount = 0;
+const mineSize = 6;
+const mineCount = 7;
+function neighbors(r, c) {
+  const out = [];
+  for (let dr = -1; dr <= 1; dr += 1) {
+    for (let dc = -1; dc <= 1; dc += 1) {
+      if (!dr && !dc) continue;
+      const nr = r + dr;
+      const nc = c + dc;
+      if (nr >= 0 && nr < mineSize && nc >= 0 && nc < mineSize) out.push([nr, nc]);
+    }
+  }
+  return out;
+}
+function resetMines() {
+  mineData = Array.from({ length: mineSize }, () => Array.from({ length: mineSize }, () => ({ mine: false, open: false })));
+  mineOpenCount = 0;
+  let placed = 0;
+  while (placed < mineCount) {
+    const r = Math.floor(Math.random() * mineSize);
+    const c = Math.floor(Math.random() * mineSize);
+    if (!mineData[r][c].mine) {
+      mineData[r][c].mine = true;
+      placed += 1;
+    }
+  }
+  renderMines();
+  mineStatus.textContent = "Open all safe cells.";
+}
+function openMineCell(r, c) {
+  const cell = mineData[r][c];
+  if (cell.open) return;
+  cell.open = true;
+  if (cell.mine) {
+    mineStatus.textContent = "Boom! You hit a mine.";
+    mineData.flat().forEach((x) => { if (x.mine) x.open = true; });
+    renderMines();
+    return;
+  }
+  mineOpenCount += 1;
+  const count = neighbors(r, c).filter(([nr, nc]) => mineData[nr][nc].mine).length;
+  if (count === 0) neighbors(r, c).forEach(([nr, nc]) => openMineCell(nr, nc));
+  if (mineOpenCount === mineSize * mineSize - mineCount) {
+    mineStatus.textContent = "You cleared the board!";
+  }
+}
+function renderMines() {
+  mineBoard.innerHTML = "";
+  for (let r = 0; r < mineSize; r += 1) {
+    for (let c = 0; c < mineSize; c += 1) {
+      const cell = mineData[r][c];
+      const b = document.createElement("button");
+      b.className = `mine-cell ${cell.open ? "open" : ""}`;
+      if (cell.open) {
+        if (cell.mine) b.textContent = "💣";
+        else {
+          const count = neighbors(r, c).filter(([nr, nc]) => mineData[nr][nc].mine).length;
+          b.textContent = count || "";
+        }
+      }
+      b.addEventListener("click", () => {
+        if (mineStatus.textContent.includes("Boom")) return;
+        openMineCell(r, c);
+        renderMines();
+      });
+      mineBoard.appendChild(b);
+    }
+  }
+}
+document.getElementById("mineReset").addEventListener("click", resetMines);
+resetMines();
+
+// 10) Mini Sudoku (4x4)
+const sudokuBoard = document.getElementById("sudokuBoard");
+const sudokuStatus = document.getElementById("sudokuStatus");
+const sudokuPuzzle = [
+  [1, 0, 0, 4],
+  [0, 4, 1, 0],
+  [2, 0, 4, 0],
+  [0, 3, 0, 1],
+];
+const sudokuSolution = [
+  [1, 2, 3, 4],
+  [3, 4, 1, 2],
+  [2, 1, 4, 3],
+  [4, 3, 2, 1],
+];
+function renderSudoku(reset = false) {
+  sudokuBoard.innerHTML = "";
+  for (let r = 0; r < 4; r += 1) {
+    for (let c = 0; c < 4; c += 1) {
+      const inp = document.createElement("input");
+      inp.maxLength = 1;
+      if (sudokuPuzzle[r][c]) {
+        inp.value = String(sudokuPuzzle[r][c]);
+        inp.disabled = true;
+        inp.classList.add("sudoku-fixed");
+      } else if (!reset) {
+        inp.value = "";
+      }
+      inp.dataset.r = String(r);
+      inp.dataset.c = String(c);
+      sudokuBoard.appendChild(inp);
+    }
+  }
+  sudokuStatus.textContent = "Fill 1-4 in each row and column.";
+}
+function checkSudoku() {
+  let ok = true;
+  [...sudokuBoard.querySelectorAll("input")].forEach((inp) => {
+    if (inp.disabled) return;
+    const r = Number(inp.dataset.r);
+    const c = Number(inp.dataset.c);
+    if (Number(inp.value) !== sudokuSolution[r][c]) ok = false;
+  });
+  sudokuStatus.textContent = ok ? "Solved!" : "Not correct yet.";
+}
+document.getElementById("sudokuCheck").addEventListener("click", checkSudoku);
+document.getElementById("sudokuReset").addEventListener("click", () => renderSudoku(true));
+renderSudoku();
+
+// Shared keyboard + swipe handling for 2048
+window.addEventListener("keydown", (e) => {
+  if (document.activeElement && game2048Card.contains(document.activeElement) && ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) {
+    e.preventDefault();
+    move2048(e.key);
+  }
+});
+let touchStart = null;
+game2048Card.addEventListener("touchstart", (e) => {
+  const t = e.changedTouches[0];
+  touchStart = { x: t.clientX, y: t.clientY };
+}, { passive: true });
+game2048Card.addEventListener("touchend", (e) => {
+  if (!touchStart) return;
+  const t = e.changedTouches[0];
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  touchStart = null;
+  if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
+  if (Math.abs(dx) > Math.abs(dy)) move2048(dx > 0 ? "ArrowRight" : "ArrowLeft");
+  else move2048(dy > 0 ? "ArrowDown" : "ArrowUp");
+}, { passive: true });
