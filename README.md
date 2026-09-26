@@ -19,7 +19,7 @@ A professional resume builder that runs entirely in your browser. Left-side edit
 
 ## How to use
 
-1. Open `index.html` in any browser (double-click works — no server needed).
+1. Open `index.html` in any browser (double-click works — no server needed) — that's the landing page; the builder itself lives at `builder.html`.
 2. Fill in your details, add positions, education, projects, certifications.
 3. Pick a template, watch the ATS score, paste a job description to check keyword overlap.
 4. Click **Download PDF** → in the print dialog choose *Save as PDF* → name it `FirstName_LastName_Resume.pdf`.
@@ -47,7 +47,10 @@ No build step — it's three static files.
 
 | File | Purpose |
 |---|---|
-| `index.html` | App shell: editor, preview, ATS + JD panels |
+| `index.html` | Landing page: hero, features, how-it-works, templates, FAQ |
+| `landing.css` | Landing page styles + motion system |
+| `landing.js` | Landing page: reveals, hero gauge, FAQ accordion |
+| `builder.html` | App shell: editor, preview, ATS + JD panels |
 | `styles.css` | App UI, the 3 resume templates, `@media print` rules |
 | `app.js` | Vanilla JS: state, rendering, ATS checks, JD matcher, export |
 

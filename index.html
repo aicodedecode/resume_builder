@@ -3,151 +3,292 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Resume Builder — ATS-Friendly</title>
-<meta name="description" content="Build a professional, ATS-compliant resume in your browser. Live preview, ATS score checker, keyword matcher, PDF export. 100% private — your data never leaves your device.">
-<meta name="theme-color" content="#f3f5f8">
-<link rel="stylesheet" href="styles.css">
+<title>Resume Builder — Free ATS-Friendly Resume Builder (100% Private)</title>
+<meta name="description" content="Build an ATS-friendly resume in your browser. Live 0–100 ATS score checker, job-description keyword matcher, 3 ATS-safe templates, one-click PDF. Free forever, no sign-up — your data never leaves your device.">
+<meta name="theme-color" content="#f6f7f9">
+<link rel="stylesheet" href="landing.css">
+<noscript><style>
+  .hero-anim, .reveal { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .mock-chip, .mock-gauge { animation: none !important; }
+</style></noscript>
 </head>
 <body>
 
-<a class="skip-link no-print" href="#main">Skip to main content</a>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-<header class="app-header no-print">
-  <div class="brand">
-    <span class="brand-mark" aria-hidden="true">◈</span>
-    <div>
-      <strong>Resume Builder</strong>
-      <small>ATS-friendly &middot; 100% private</small>
-    </div>
-  </div>
-  <div class="header-actions">
-    <button class="btn" id="btn-sample" type="button">Load sample</button>
-    <button class="btn" id="btn-clear" type="button">Clear all</button>
-    <button class="btn" id="btn-copy" type="button">Copy plain text</button>
-    <button class="btn primary" id="btn-print" type="button">Download PDF</button>
+<!-- ============ NAV ============ -->
+<header class="nav" id="top">
+  <div class="nav-inner">
+    <a class="brand" href="#top" translate="no"><span class="brand-mark" aria-hidden="true">◈</span><span>Resume Builder</span></a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#templates">Templates</a>
+      <a href="#faq">FAQ</a>
+    </nav>
+    <a class="btn btn-primary nav-cta" href="builder.html">Build my resume <span aria-hidden="true">→</span></a>
   </div>
 </header>
 
-<div class="filename-hint no-print" id="filename-hint" role="status"></div>
+<main id="main">
 
-<main class="layout" id="main">
-  <h1 class="visually-hidden">Resume Builder — create an ATS-friendly resume</h1>
-
-  <!-- ============ EDITOR ============ -->
-  <section class="editor no-print" aria-label="Resume editor">
-
-    <div class="card">
-      <h2>Template</h2>
-      <p class="hint">All three templates are ATS-safe: single column, real text, standard headings, no graphics.</p>
-      <div class="template-switch" id="template-switch" role="group" aria-label="Choose a template">
-        <button type="button" data-template="classic" aria-pressed="true"><strong>Classic</strong><span>Centered header, serif name</span></button>
-        <button type="button" data-template="modern" aria-pressed="false"><strong>Modern</strong><span>Left-aligned, subtle accent</span></button>
-        <button type="button" data-template="compact" aria-pressed="false"><strong>Compact</strong><span>Tighter, fits one page</span></button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Personal Information</h2>
-      <div class="grid2">
-        <label>Full name <input id="p-name" name="full-name" data-personal="name" type="text" placeholder="Arjun Sharma" autocomplete="name"></label>
-        <label>Job title / target role <input id="p-title" name="job-title" data-personal="title" type="text" placeholder="Senior Software Engineer" autocomplete="organization-title"></label>
-        <label>Email <input id="p-email" name="email" data-personal="email" type="email" placeholder="you@example.com" autocomplete="email" spellcheck="false"></label>
-        <label>Phone <input id="p-phone" name="phone" data-personal="phone" type="tel" inputmode="tel" placeholder="+91 98765 43210" autocomplete="tel" spellcheck="false"></label>
-        <label>Location <input id="p-location" name="location" data-personal="location" type="text" placeholder="Bengaluru, India" autocomplete="off"></label>
-        <label>LinkedIn URL <input id="p-linkedin" name="linkedin" data-personal="linkedin" type="url" placeholder="linkedin.com/in/yourname" autocomplete="off" spellcheck="false"></label>
-        <label class="span2">Portfolio / website URL <input id="p-website" name="website" data-personal="website" type="url" placeholder="yourname.dev" autocomplete="off" spellcheck="false"></label>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Professional Summary <span class="count" id="summary-count">0 words</span></h2>
-      <p class="hint">3–4 lines, 30–80 words. No &ldquo;I/me/my&rdquo; — write in implied first person (&ldquo;Senior Engineer with…&rdquo;).</p>
-      <textarea id="summary" name="summary" rows="4" autocomplete="off" placeholder="Senior Software Engineer with 5+ years of experience building…"></textarea>
-    </div>
-
-    <div class="card">
-      <h2>Work Experience</h2>
-      <p class="hint">Reverse chronological. Start every bullet with an action verb, add numbers (%, ₹, team size).</p>
-      <div id="exp-list"></div>
-      <button class="btn dashed" id="btn-add-exp" type="button">+ Add position</button>
-    </div>
-
-    <div class="card">
-      <h2>Education</h2>
-      <div id="edu-list"></div>
-      <button class="btn dashed" id="btn-add-edu" type="button">+ Add education</button>
-    </div>
-
-    <div class="card">
-      <h2>Skills <span class="count" id="skills-count">0 skills</span></h2>
-      <p class="hint">Comma or line separated. Aim for 8+ skills matching your target role.</p>
-      <textarea id="skills" name="skills" rows="3" autocomplete="off" placeholder="Java, Spring Boot, Microservices, REST APIs, PostgreSQL…"></textarea>
-    </div>
-
-    <div class="card">
-      <h2>Projects <span class="tag">optional</span></h2>
-      <div id="proj-list"></div>
-      <button class="btn dashed" id="btn-add-proj" type="button">+ Add project</button>
-    </div>
-
-    <div class="card">
-      <h2>Certifications <span class="tag">optional</span></h2>
-      <div id="cert-list"></div>
-      <button class="btn dashed" id="btn-add-cert" type="button">+ Add certification</button>
-    </div>
-
-    <div class="card" id="ats-card">
-      <h2>ATS Score <span class="count" id="ats-words">0 words</span></h2>
-      <p class="hint">How applicant-tracking systems are likely to parse your resume. Updates live as you type.</p>
-      <div class="ats-score-row">
-        <div class="ats-gauge">
-          <svg viewBox="0 0 120 120" width="104" height="104" aria-hidden="true" focusable="false">
-            <circle class="gauge-track" cx="60" cy="60" r="52"></circle>
-            <circle class="gauge-fill" id="ats-fill" cx="60" cy="60" r="52"></circle>
-          </svg>
-          <div class="ats-number" id="ats-number">0</div>
+  <!-- ============ HERO ============ -->
+  <section class="hero" aria-labelledby="hero-h">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow hero-anim"><span class="eyebrow-dot" aria-hidden="true"></span>Free&nbsp;·&nbsp;No sign-up&nbsp;·&nbsp;100% private</p>
+        <h1 id="hero-h" class="hero-anim">Beat the bots.<br>Get the interview.</h1>
+        <p class="lede hero-anim">Build an ATS-friendly resume right in your browser — with a live 0–100 ATS score, an 11-point checker, and a job-description keyword matcher. Free forever, and your data never leaves your device.</p>
+        <div class="hero-ctas hero-anim">
+          <a class="btn btn-primary btn-lg" href="builder.html">Build my resume <span aria-hidden="true">→</span></a>
+          <a class="btn btn-ghost btn-lg" href="#how">See how it works</a>
         </div>
-        <div class="ats-meta">
-          <div class="ats-verdict" id="ats-verdict"></div>
+        <p class="hero-note hero-anim">No account. No upload. Just a better resume.</p>
+      </div>
+
+      <div class="hero-visual hero-anim" role="img" aria-label="Stylized preview of the resume builder: a resume draft beside an ATS score gauge reading 100 out of 100">
+        <div class="mock">
+          <div class="mock-paper" aria-hidden="true">
+            <div class="mp-name">Arjun Sharma</div>
+            <div class="mp-contact">Senior Software Engineer · Bengaluru, India</div>
+            <div class="mp-sec"><span>Professional Summary</span></div>
+            <div class="mp-line w90"></div>
+            <div class="mp-line w75"></div>
+            <div class="mp-sec"><span>Work Experience</span></div>
+            <div class="mp-line w60"></div>
+            <div class="mp-line w95"></div>
+            <div class="mp-line w80"></div>
+            <div class="mp-line w65"></div>
+            <div class="mp-sec"><span>Skills</span></div>
+            <div class="mp-line w85"></div>
+            <div class="mp-line w50"></div>
+          </div>
+          <div class="mock-chip" aria-hidden="true"><span class="chip-tick">✓</span> “Python” matched</div>
+          <div class="mock-gauge" aria-hidden="true">
+            <div class="gauge-ring">
+              <svg viewBox="0 0 120 120" width="96" height="96">
+                <circle class="g-track" cx="60" cy="60" r="52"></circle>
+                <circle class="g-fill" id="hero-gauge-fill" cx="60" cy="60" r="52"></circle>
+              </svg>
+              <div class="g-num"><span id="hero-score">100</span></div>
+            </div>
+            <p class="g-label">ATS Score</p>
+            <ul class="g-checks">
+              <li><span class="g-tick">✓</span>Action verbs</li>
+              <li><span class="g-tick">✓</span>Quantified results</li>
+            </ul>
+          </div>
         </div>
       </div>
-      <ul class="ats-checks" id="ats-checks"></ul>
     </div>
-
-    <div class="card">
-      <h2>Job-Description Keyword Matcher</h2>
-      <p class="hint">Paste a job description. We&rsquo;ll extract its keywords and show which ones your resume already covers — and which to add.</p>
-      <textarea id="jd-input" name="job-description" rows="5" autocomplete="off" placeholder="Paste the job description here…"></textarea>
-      <button class="btn primary" id="btn-jd" type="button">Analyze keywords</button>
-      <div id="jd-results" class="jd-results" aria-live="polite" hidden>
-        <div class="jd-score" id="jd-score"></div>
-        <h3>Matched keywords</h3>
-        <div class="chips chips-ok" id="jd-matched"></div>
-        <h3>Missing keywords <small>— consider adding where honest</small></h3>
-        <div class="chips chips-miss" id="jd-missing"></div>
-      </div>
-    </div>
-
   </section>
 
-  <!-- ============ PREVIEW ============ -->
-  <section class="preview-wrap" aria-label="Resume preview">
-    <div class="preview-bar no-print">
-      <span>Live preview</span>
-      <span class="count" id="preview-words">0 words</span>
+  <!-- ============ TRUST STRIP ============ -->
+  <section class="trust" aria-label="Highlights">
+    <ul class="trust-list">
+      <li class="reveal"><span class="t-ico" aria-hidden="true">◈</span>3 ATS-safe templates</li>
+      <li class="reveal"><span class="t-ico" aria-hidden="true">◎</span>11-point ATS checker</li>
+      <li class="reveal"><span class="t-ico" aria-hidden="true">⌕</span>JD keyword matcher</li>
+      <li class="reveal"><span class="t-ico" aria-hidden="true">⤓</span>One-click PDF</li>
+      <li class="reveal"><span class="t-ico" aria-hidden="true">🔒</span>100% private</li>
+      <li class="reveal"><span class="t-ico" aria-hidden="true">✦</span>Free forever</li>
+    </ul>
+  </section>
+
+  <!-- ============ PROBLEM → SOLUTION ============ -->
+  <section class="problem">
+    <div class="wrap">
+      <p class="eyebrow reveal">Why resumes get rejected</p>
+      <h2 class="reveal">Software reads your resume before a human does.</h2>
+      <p class="reveal">Applicant-tracking systems filter out resumes they can’t parse — and graphics, tables, text boxes, and fancy layouts get mangled or tossed. Recruiters spend about 6 seconds on the resumes that survive.</p>
+      <p class="reveal"><strong>This builder flips the process:</strong> it scores your resume the way a parser would — <em>before</em> you submit — and tells you exactly what to fix.</p>
     </div>
-    <div id="resume" class="resume template-classic" aria-label="Resume document"></div>
-    <p class="print-note no-print">Tip: <strong>Download PDF</strong> opens your print dialog — choose &ldquo;Save as PDF&rdquo;, A4, default margins.</p>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section class="section" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <p class="eyebrow reveal">Features</p>
+      <h2 id="features-h" class="reveal">Everything the bots check.<br>Nothing they hate.</h2>
+      <p class="section-sub reveal">A focused toolkit for one job: a resume that parses cleanly and reads well.</p>
+
+      <div class="feat-grid">
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <h3>ATS score checker</h3>
+          <p>A live 0–100 score with 11 pass/fail checks — contact info, action verbs, quantified achievements, standard headings — plus specific fix advice for each one.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg></div>
+          <h3>JD keyword matcher</h3>
+          <p>Paste a job description and see which keywords your resume already covers — and which ones to add, where honest.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+          <h3>3 ATS-safe templates</h3>
+          <p>Classic, Modern, and Compact. Single column, real text, standard headings — no graphics, tables, or text boxes for parsers to choke on.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/><path d="M19 15l.9 2.1L22 18l-2.1.9L19 21l-.9-2.1L16 18l2.1-.9z"/></svg></div>
+          <h3>Live preview</h3>
+          <p>Every keystroke updates the resume instantly. What you see is exactly what the ATS parses — no surprises at export.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/></svg></div>
+          <h3>One-click PDF export</h3>
+          <p>Download PDF through your print dialog — A4, real selectable text. Or copy plain text for portals that want it raw.</p>
+        </article>
+        <article class="card reveal">
+          <div class="card-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></div>
+          <h3>100% private</h3>
+          <p>Everything runs in your browser. Your data lives in localStorage on your device only — nothing is ever uploaded anywhere.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ HOW IT WORKS ============ -->
+  <section class="section section-alt" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <p class="eyebrow reveal">How it works</p>
+      <h2 id="how-h" class="reveal">From blank page to submittable in minutes.</h2>
+
+      <ol class="steps">
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">1</span>
+          <div>
+            <h3>Fill in — or load the sample</h3>
+            <p>Add your details section by section, or start from a realistic sample resume and make it yours. Your work autosaves as you type.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">2</span>
+          <div>
+            <h3>Watch your ATS score climb</h3>
+            <p>The 11-point checker grades your resume live and tells you exactly what to fix — weak verbs, missing numbers, thin skills.</p>
+          </div>
+        </li>
+        <li class="step reveal">
+          <span class="step-num" aria-hidden="true">3</span>
+          <div>
+            <h3>Match keywords, export PDF</h3>
+            <p>Paste the job description, close the keyword gaps, then download your PDF — real selectable text, ready to submit.</p>
+          </div>
+        </li>
+      </ol>
+
+      <p class="center reveal"><a class="btn btn-primary btn-lg" href="builder.html">Start building <span aria-hidden="true">→</span></a></p>
+    </div>
+  </section>
+
+  <!-- ============ TEMPLATES ============ -->
+  <section class="section" id="templates" aria-labelledby="templates-h">
+    <div class="wrap">
+      <p class="eyebrow reveal">Templates</p>
+      <h2 id="templates-h" class="reveal">Three looks. All parser-proof.</h2>
+      <p class="section-sub reveal">Every template follows the same ATS rules — single column, real text, standard headings. Pick the style that fits you.</p>
+
+      <div class="tpl-grid">
+        <article class="card tpl reveal">
+          <div class="tpl-thumb tpl-classic" aria-hidden="true">
+            <span class="tt-name serif">Arjun Sharma</span>
+            <span class="tt-sub"></span>
+            <span class="tt-h"></span><span class="tt-l w80"></span>
+            <span class="tt-h"></span><span class="tt-l w65"></span><span class="tt-l w90"></span>
+          </div>
+          <h3>Classic</h3>
+          <p>Centered header with a serif name. The traditional, never-wrong choice.</p>
+          <a class="tpl-link" href="builder.html">Use this template <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="card tpl reveal">
+          <div class="tpl-thumb tpl-modern" aria-hidden="true">
+            <span class="tt-name">Arjun Sharma</span>
+            <span class="tt-sub accent"></span>
+            <span class="tt-h"></span><span class="tt-l w80"></span>
+            <span class="tt-h"></span><span class="tt-l w65"></span><span class="tt-l w90"></span>
+          </div>
+          <h3>Modern</h3>
+          <p>Left-aligned with a subtle blue accent. Clean and current.</p>
+          <a class="tpl-link" href="builder.html">Use this template <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="card tpl reveal">
+          <div class="tpl-thumb tpl-compact" aria-hidden="true">
+            <span class="tt-name sm">Arjun Sharma</span>
+            <span class="tt-sub"></span>
+            <span class="tt-h"></span><span class="tt-l w80"></span><span class="tt-l w70"></span>
+            <span class="tt-h"></span><span class="tt-l w90"></span><span class="tt-l w55"></span>
+          </div>
+          <h3>Compact</h3>
+          <p>Tighter spacing that fits more on one page. For dense careers.</p>
+          <a class="tpl-link" href="builder.html">Use this template <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section class="section section-alt" id="faq" aria-labelledby="faq-h">
+    <div class="wrap wrap-narrow">
+      <p class="eyebrow reveal">FAQ</p>
+      <h2 id="faq-h" class="reveal">Questions, answered.</h2>
+
+      <div class="faq">
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a1" id="faq-q1"><span>Is it really free?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a1" role="region" aria-labelledby="faq-q1"><div class="faq-a-inner"><p>Yes — free forever. No sign-up, no paywall, no “pro” tier. It’s a small set of static files that runs entirely in your browser.</p></div></div>
+        </div>
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a2" id="faq-q2"><span>Where does my data go?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a2" role="region" aria-labelledby="faq-q2"><div class="faq-a-inner"><p>Nowhere. Everything is stored in your browser’s localStorage on your own device. Nothing is uploaded to any server — there isn’t one.</p></div></div>
+        </div>
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a3" id="faq-q3"><span>Will my resume actually pass ATS filters?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a3" role="region" aria-labelledby="faq-q3"><div class="faq-a-inner"><p>The builder follows the rules parsers expect: single-column layout, real selectable text, standard headings (Professional Summary, Work Experience, Education…), consistent MM/YYYY dates, no graphics or tables. The 11-point checker scores your content against these rules live. No tool can guarantee a specific employer’s system — but this removes the common formatting reasons resumes get rejected.</p></div></div>
+        </div>
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a4" id="faq-q4"><span>How do I get a PDF?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a4" role="region" aria-labelledby="faq-q4"><div class="faq-a-inner"><p>Click <strong>Download PDF</strong> — your print dialog opens — choose “Save as PDF”, A4, default margins. The PDF is generated from the same live text, so it’s real selectable text: exactly what ATS parsers read.</p></div></div>
+        </div>
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a5" id="faq-q5"><span>Do I need to sign up or install anything?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a5" role="region" aria-labelledby="faq-q5"><div class="faq-a-inner"><p>No. Open the builder in any browser — it even works double-clicked from your computer with no server. Your work autosaves in the browser as you type.</p></div></div>
+        </div>
+        <div class="faq-item reveal">
+          <h3><button class="faq-q" aria-expanded="false" aria-controls="faq-a6" id="faq-q6"><span>What makes a template “ATS-safe”?</span><span class="faq-icon" aria-hidden="true"></span></button></h3>
+          <div class="faq-a" id="faq-a6" role="region" aria-labelledby="faq-q6"><div class="faq-a-inner"><p>Single column, real text (no images, icons, tables, text boxes, or progress bars), standard section headings exactly as parsers expect, standard fonts, and consistent dates. All three templates follow these rules — the difference between them is style, not safety.</p></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FINAL CTA ============ -->
+  <section class="cta-band" aria-labelledby="cta-h">
+    <div class="wrap">
+      <h2 id="cta-h" class="reveal">Your next job starts with a resume the bots can read.</h2>
+      <p class="reveal">Free. No sign-up. Private by design.</p>
+      <p class="reveal"><a class="btn btn-light btn-lg" href="builder.html">Build my resume <span aria-hidden="true">→</span></a></p>
+    </div>
   </section>
 
 </main>
 
-<footer class="app-footer no-print">
-  <p>Your data stays in this browser (localStorage). Nothing is uploaded anywhere.</p>
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div class="footer-brand">
+      <a class="brand" href="#top" translate="no"><span class="brand-mark" aria-hidden="true">◈</span><span>Resume Builder</span></a>
+      <p>Built for job seekers.</p>
+    </div>
+    <nav class="footer-links" aria-label="Footer">
+      <a href="builder.html">Open the builder</a>
+      <a href="#features">Features</a>
+      <a href="#faq">FAQ</a>
+      <a href="#top">Back to top</a>
+    </nav>
+    <p class="footer-note">Your data never leaves your device. No tracking, no accounts, no servers.</p>
+  </div>
 </footer>
 
-<div class="visually-hidden" id="live-region" aria-live="polite"></div>
-
-<script src="app.js"></script>
+<script src="landing.js"></script>
 </body>
 </html>
