@@ -1,100 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Instant Game Pack (No Sign-In)</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <header class="app-header">
-      <h1>Instant Game Pack</h1>
-      <p>10 lightweight browser games anyone can play instantly—no sign-in required.</p>
-    </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Builder — ATS-Friendly</title>
+<meta name="description" content="Build a professional, ATS-compliant resume in your browser. Live preview, ATS score checker, keyword matcher, PDF export. 100% private — your data never leaves your device.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-    <main class="games-grid">
-      <section class="game-card">
-        <h2>1) Tic-Tac-Toe</h2>
-        <div id="tttBoard" class="ttt-board" aria-label="Tic-Tac-Toe board"></div>
-        <p id="tttStatus" class="status"></p>
-        <button id="tttReset" class="btn">Reset</button>
-      </section>
+<header class="app-header no-print">
+  <div class="brand">
+    <span class="brand-mark">◈</span>
+    <div>
+      <strong>Resume Builder</strong>
+      <small>ATS-friendly &middot; 100% private</small>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn" id="btn-sample" type="button" title="Fill the editor with a realistic example">Load sample</button>
+    <button class="btn" id="btn-clear" type="button" title="Erase everything">Clear all</button>
+    <button class="btn" id="btn-copy" type="button" title="Copy a plain-text version (great for ATS portals)">Copy plain text</button>
+    <button class="btn primary" id="btn-print" type="button" title="Open the print dialog — choose Save as PDF">Download PDF</button>
+  </div>
+</header>
 
-      <section class="game-card">
-        <h2>2) Rock Paper Scissors</h2>
-        <div class="rps-controls">
-          <button class="btn rps-btn" data-move="rock">Rock</button>
-          <button class="btn rps-btn" data-move="paper">Paper</button>
-          <button class="btn rps-btn" data-move="scissors">Scissors</button>
-        </div>
-        <p id="rpsStatus" class="status"></p>
-        <p id="rpsScore" class="subtle"></p>
-      </section>
+<div class="filename-hint no-print" id="filename-hint" role="status"></div>
 
-      <section class="game-card">
-        <h2>3) Hangman</h2>
-        <p id="hangmanWord" class="word-slot"></p>
-        <p id="hangmanInfo" class="status"></p>
-        <input id="hangmanInput" maxlength="1" placeholder="Type a letter" />
-        <button id="hangmanGuess" class="btn">Guess</button>
-        <button id="hangmanReset" class="btn btn-secondary">New Word</button>
-      </section>
+<main class="layout">
 
-      <section class="game-card">
-        <h2>4) Memory Match</h2>
-        <div id="memoryBoard" class="memory-board"></div>
-        <p id="memoryStatus" class="status"></p>
-        <button id="memoryReset" class="btn">Restart</button>
-      </section>
+  <!-- ============ EDITOR ============ -->
+  <section class="editor no-print" id="editor" aria-label="Resume editor">
 
-      <section class="game-card">
-        <h2>5) Number Guess</h2>
-        <p class="subtle">Guess a number from 1 to 100.</p>
-        <input id="guessInput" type="number" min="1" max="100" placeholder="50" />
-        <button id="guessBtn" class="btn">Guess</button>
-        <button id="guessReset" class="btn btn-secondary">Reset</button>
-        <p id="guessStatus" class="status"></p>
-      </section>
+    <div class="card">
+      <h2>Template</h2>
+      <p class="hint">All three templates are ATS-safe: single column, real text, standard headings, no graphics.</p>
+      <div class="template-switch" id="template-switch" role="group" aria-label="Choose a template">
+        <button type="button" data-template="classic"><strong>Classic</strong><span>Centered header, serif name</span></button>
+        <button type="button" data-template="modern"><strong>Modern</strong><span>Left-aligned, subtle accent</span></button>
+        <button type="button" data-template="compact"><strong>Compact</strong><span>Tighter, fits one page</span></button>
+      </div>
+    </div>
 
-      <section class="game-card">
-        <h2>6) Whac-a-Mole</h2>
-        <div id="moleBoard" class="mole-board"></div>
-        <p id="moleStatus" class="status"></p>
-        <button id="moleStart" class="btn">Start 20s Round</button>
-      </section>
+    <div class="card">
+      <h2>Personal Information</h2>
+      <div class="grid2">
+        <label>Full name <input id="p-name" data-personal="name" type="text" placeholder="Arjun Sharma" autocomplete="name"></label>
+        <label>Job title / target role <input id="p-title" data-personal="title" type="text" placeholder="Senior Software Engineer"></label>
+        <label>Email <input id="p-email" data-personal="email" type="email" placeholder="you@example.com" autocomplete="email"></label>
+        <label>Phone <input id="p-phone" data-personal="phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel"></label>
+        <label>Location <input id="p-location" data-personal="location" type="text" placeholder="Bengaluru, India"></label>
+        <label>LinkedIn URL <input id="p-linkedin" data-personal="linkedin" type="url" placeholder="linkedin.com/in/yourname"></label>
+        <label class="span2">Portfolio / website URL <input id="p-website" data-personal="website" type="url" placeholder="yourname.dev"></label>
+      </div>
+    </div>
 
-      <section class="game-card">
-        <h2>7) Snake</h2>
-        <canvas id="snakeCanvas" width="240" height="240"></canvas>
-        <p class="subtle">Use arrow keys.</p>
-        <p id="snakeStatus" class="status"></p>
-        <button id="snakeReset" class="btn">Reset</button>
-      </section>
+    <div class="card">
+      <h2>Professional Summary <span class="count" id="summary-count">0 words</span></h2>
+      <p class="hint">3–4 lines, 30–80 words. No "I/me/my" — write in implied first person ("Senior Engineer with…").</p>
+      <textarea id="summary" rows="4" placeholder="Senior Software Engineer with 5+ years of experience building…"></textarea>
+    </div>
 
-      <section class="game-card">
-        <h2>8) 2048 (4x4)</h2>
-        <div id="grid2048" class="grid-2048"></div>
-        <p class="subtle">Use arrow keys while hovering this card.</p>
-        <p id="status2048" class="status"></p>
-        <button id="reset2048" class="btn">Reset</button>
-      </section>
+    <div class="card">
+      <h2>Work Experience</h2>
+      <p class="hint">Reverse chronological. Start every bullet with an action verb, add numbers (%, ₹, team size).</p>
+      <div id="exp-list"></div>
+      <button class="btn dashed" id="btn-add-exp" type="button">+ Add position</button>
+    </div>
 
-      <section class="game-card">
-        <h2>9) Minesweeper (6x6)</h2>
-        <div id="mineBoard" class="mine-board"></div>
-        <p id="mineStatus" class="status"></p>
-        <button id="mineReset" class="btn">Reset</button>
-      </section>
+    <div class="card">
+      <h2>Education</h2>
+      <div id="edu-list"></div>
+      <button class="btn dashed" id="btn-add-edu" type="button">+ Add education</button>
+    </div>
 
-      <section class="game-card">
-        <h2>10) Mini Sudoku</h2>
-        <div id="sudokuBoard" class="sudoku-board"></div>
-        <p id="sudokuStatus" class="status"></p>
-        <button id="sudokuCheck" class="btn">Check</button>
-        <button id="sudokuReset" class="btn btn-secondary">Reset</button>
-      </section>
-    </main>
+    <div class="card">
+      <h2>Skills <span class="count" id="skills-count">0 skills</span></h2>
+      <p class="hint">Comma or line separated. Aim for 8+ skills matching your target role.</p>
+      <textarea id="skills" rows="3" placeholder="Java, Spring Boot, Microservices, REST APIs, PostgreSQL…"></textarea>
+    </div>
 
-    <script src="script.js"></script>
-  </body>
+    <div class="card">
+      <h2>Projects <span class="tag">optional</span></h2>
+      <div id="proj-list"></div>
+      <button class="btn dashed" id="btn-add-proj" type="button">+ Add project</button>
+    </div>
+
+    <div class="card">
+      <h2>Certifications <span class="tag">optional</span></h2>
+      <div id="cert-list"></div>
+      <button class="btn dashed" id="btn-add-cert" type="button">+ Add certification</button>
+    </div>
+
+    <div class="card" id="ats-card">
+      <h2>ATS Score <span class="count" id="ats-words">0 words</span></h2>
+      <p class="hint">How applicant-tracking systems are likely to parse your resume. Updates live as you type.</p>
+      <div class="ats-score-row">
+        <div class="ats-meter"><div class="ats-meter-fill" id="ats-fill"></div></div>
+        <div class="ats-number" id="ats-number">0</div>
+      </div>
+      <div class="ats-verdict" id="ats-verdict"></div>
+      <ul class="ats-checks" id="ats-checks"></ul>
+    </div>
+
+    <div class="card">
+      <h2>Job-Description Keyword Matcher</h2>
+      <p class="hint">Paste a job description. We'll extract its keywords and show which ones your resume already covers — and which to add.</p>
+      <textarea id="jd-input" rows="5" placeholder="Paste the job description here…"></textarea>
+      <button class="btn primary" id="btn-jd" type="button">Analyze keywords</button>
+      <div id="jd-results" class="jd-results" hidden>
+        <div class="jd-score" id="jd-score"></div>
+        <h3>Matched keywords</h3>
+        <div class="chips chips-ok" id="jd-matched"></div>
+        <h3>Missing keywords <small>— consider adding where honest</small></h3>
+        <div class="chips chips-miss" id="jd-missing"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ PREVIEW ============ -->
+  <section class="preview-wrap" aria-label="Resume preview">
+    <div class="preview-bar no-print">
+      <span>Live preview</span>
+      <span class="count" id="preview-words">0 words</span>
+    </div>
+    <div id="resume" class="resume template-classic" aria-label="Resume document"></div>
+    <p class="print-note no-print">Tip: <strong>Download PDF</strong> opens your print dialog — choose "Save as PDF", A4, default margins.</p>
+  </section>
+
+</main>
+
+<footer class="app-footer no-print">
+  <p>Your data stays in this browser (localStorage). Nothing is uploaded anywhere.</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
 </html>
