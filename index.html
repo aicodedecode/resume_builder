@@ -2,63 +2,67 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Resume Builder — ATS-Friendly</title>
 <meta name="description" content="Build a professional, ATS-compliant resume in your browser. Live preview, ATS score checker, keyword matcher, PDF export. 100% private — your data never leaves your device.">
+<meta name="theme-color" content="#f3f5f8">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
+<a class="skip-link no-print" href="#main">Skip to main content</a>
+
 <header class="app-header no-print">
   <div class="brand">
-    <span class="brand-mark">◈</span>
+    <span class="brand-mark" aria-hidden="true">◈</span>
     <div>
       <strong>Resume Builder</strong>
       <small>ATS-friendly &middot; 100% private</small>
     </div>
   </div>
   <div class="header-actions">
-    <button class="btn" id="btn-sample" type="button" title="Fill the editor with a realistic example">Load sample</button>
-    <button class="btn" id="btn-clear" type="button" title="Erase everything">Clear all</button>
-    <button class="btn" id="btn-copy" type="button" title="Copy a plain-text version (great for ATS portals)">Copy plain text</button>
-    <button class="btn primary" id="btn-print" type="button" title="Open the print dialog — choose Save as PDF">Download PDF</button>
+    <button class="btn" id="btn-sample" type="button">Load sample</button>
+    <button class="btn" id="btn-clear" type="button">Clear all</button>
+    <button class="btn" id="btn-copy" type="button">Copy plain text</button>
+    <button class="btn primary" id="btn-print" type="button">Download PDF</button>
   </div>
 </header>
 
 <div class="filename-hint no-print" id="filename-hint" role="status"></div>
 
-<main class="layout">
+<main class="layout" id="main">
+  <h1 class="visually-hidden">Resume Builder — create an ATS-friendly resume</h1>
 
   <!-- ============ EDITOR ============ -->
-  <section class="editor no-print" id="editor" aria-label="Resume editor">
+  <section class="editor no-print" aria-label="Resume editor">
 
     <div class="card">
       <h2>Template</h2>
       <p class="hint">All three templates are ATS-safe: single column, real text, standard headings, no graphics.</p>
       <div class="template-switch" id="template-switch" role="group" aria-label="Choose a template">
-        <button type="button" data-template="classic"><strong>Classic</strong><span>Centered header, serif name</span></button>
-        <button type="button" data-template="modern"><strong>Modern</strong><span>Left-aligned, subtle accent</span></button>
-        <button type="button" data-template="compact"><strong>Compact</strong><span>Tighter, fits one page</span></button>
+        <button type="button" data-template="classic" aria-pressed="true"><strong>Classic</strong><span>Centered header, serif name</span></button>
+        <button type="button" data-template="modern" aria-pressed="false"><strong>Modern</strong><span>Left-aligned, subtle accent</span></button>
+        <button type="button" data-template="compact" aria-pressed="false"><strong>Compact</strong><span>Tighter, fits one page</span></button>
       </div>
     </div>
 
     <div class="card">
       <h2>Personal Information</h2>
       <div class="grid2">
-        <label>Full name <input id="p-name" data-personal="name" type="text" placeholder="Arjun Sharma" autocomplete="name"></label>
-        <label>Job title / target role <input id="p-title" data-personal="title" type="text" placeholder="Senior Software Engineer"></label>
-        <label>Email <input id="p-email" data-personal="email" type="email" placeholder="you@example.com" autocomplete="email"></label>
-        <label>Phone <input id="p-phone" data-personal="phone" type="tel" placeholder="+91 98765 43210" autocomplete="tel"></label>
-        <label>Location <input id="p-location" data-personal="location" type="text" placeholder="Bengaluru, India"></label>
-        <label>LinkedIn URL <input id="p-linkedin" data-personal="linkedin" type="url" placeholder="linkedin.com/in/yourname"></label>
-        <label class="span2">Portfolio / website URL <input id="p-website" data-personal="website" type="url" placeholder="yourname.dev"></label>
+        <label>Full name <input id="p-name" name="full-name" data-personal="name" type="text" placeholder="Arjun Sharma" autocomplete="name"></label>
+        <label>Job title / target role <input id="p-title" name="job-title" data-personal="title" type="text" placeholder="Senior Software Engineer" autocomplete="organization-title"></label>
+        <label>Email <input id="p-email" name="email" data-personal="email" type="email" placeholder="you@example.com" autocomplete="email" spellcheck="false"></label>
+        <label>Phone <input id="p-phone" name="phone" data-personal="phone" type="tel" inputmode="tel" placeholder="+91 98765 43210" autocomplete="tel" spellcheck="false"></label>
+        <label>Location <input id="p-location" name="location" data-personal="location" type="text" placeholder="Bengaluru, India" autocomplete="off"></label>
+        <label>LinkedIn URL <input id="p-linkedin" name="linkedin" data-personal="linkedin" type="url" placeholder="linkedin.com/in/yourname" autocomplete="off" spellcheck="false"></label>
+        <label class="span2">Portfolio / website URL <input id="p-website" name="website" data-personal="website" type="url" placeholder="yourname.dev" autocomplete="off" spellcheck="false"></label>
       </div>
     </div>
 
     <div class="card">
       <h2>Professional Summary <span class="count" id="summary-count">0 words</span></h2>
-      <p class="hint">3–4 lines, 30–80 words. No "I/me/my" — write in implied first person ("Senior Engineer with…").</p>
-      <textarea id="summary" rows="4" placeholder="Senior Software Engineer with 5+ years of experience building…"></textarea>
+      <p class="hint">3–4 lines, 30–80 words. No &ldquo;I/me/my&rdquo; — write in implied first person (&ldquo;Senior Engineer with…&rdquo;).</p>
+      <textarea id="summary" name="summary" rows="4" autocomplete="off" placeholder="Senior Software Engineer with 5+ years of experience building…"></textarea>
     </div>
 
     <div class="card">
@@ -77,7 +81,7 @@
     <div class="card">
       <h2>Skills <span class="count" id="skills-count">0 skills</span></h2>
       <p class="hint">Comma or line separated. Aim for 8+ skills matching your target role.</p>
-      <textarea id="skills" rows="3" placeholder="Java, Spring Boot, Microservices, REST APIs, PostgreSQL…"></textarea>
+      <textarea id="skills" name="skills" rows="3" autocomplete="off" placeholder="Java, Spring Boot, Microservices, REST APIs, PostgreSQL…"></textarea>
     </div>
 
     <div class="card">
@@ -96,19 +100,26 @@
       <h2>ATS Score <span class="count" id="ats-words">0 words</span></h2>
       <p class="hint">How applicant-tracking systems are likely to parse your resume. Updates live as you type.</p>
       <div class="ats-score-row">
-        <div class="ats-meter"><div class="ats-meter-fill" id="ats-fill"></div></div>
-        <div class="ats-number" id="ats-number">0</div>
+        <div class="ats-gauge">
+          <svg viewBox="0 0 120 120" width="104" height="104" aria-hidden="true" focusable="false">
+            <circle class="gauge-track" cx="60" cy="60" r="52"></circle>
+            <circle class="gauge-fill" id="ats-fill" cx="60" cy="60" r="52"></circle>
+          </svg>
+          <div class="ats-number" id="ats-number">0</div>
+        </div>
+        <div class="ats-meta">
+          <div class="ats-verdict" id="ats-verdict"></div>
+        </div>
       </div>
-      <div class="ats-verdict" id="ats-verdict"></div>
       <ul class="ats-checks" id="ats-checks"></ul>
     </div>
 
     <div class="card">
       <h2>Job-Description Keyword Matcher</h2>
-      <p class="hint">Paste a job description. We'll extract its keywords and show which ones your resume already covers — and which to add.</p>
-      <textarea id="jd-input" rows="5" placeholder="Paste the job description here…"></textarea>
+      <p class="hint">Paste a job description. We&rsquo;ll extract its keywords and show which ones your resume already covers — and which to add.</p>
+      <textarea id="jd-input" name="job-description" rows="5" autocomplete="off" placeholder="Paste the job description here…"></textarea>
       <button class="btn primary" id="btn-jd" type="button">Analyze keywords</button>
-      <div id="jd-results" class="jd-results" hidden>
+      <div id="jd-results" class="jd-results" aria-live="polite" hidden>
         <div class="jd-score" id="jd-score"></div>
         <h3>Matched keywords</h3>
         <div class="chips chips-ok" id="jd-matched"></div>
@@ -126,7 +137,7 @@
       <span class="count" id="preview-words">0 words</span>
     </div>
     <div id="resume" class="resume template-classic" aria-label="Resume document"></div>
-    <p class="print-note no-print">Tip: <strong>Download PDF</strong> opens your print dialog — choose "Save as PDF", A4, default margins.</p>
+    <p class="print-note no-print">Tip: <strong>Download PDF</strong> opens your print dialog — choose &ldquo;Save as PDF&rdquo;, A4, default margins.</p>
   </section>
 
 </main>
@@ -134,6 +145,8 @@
 <footer class="app-footer no-print">
   <p>Your data stays in this browser (localStorage). Nothing is uploaded anywhere.</p>
 </footer>
+
+<div class="visually-hidden" id="live-region" aria-live="polite"></div>
 
 <script src="app.js"></script>
 </body>

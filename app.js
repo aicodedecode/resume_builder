@@ -22,6 +22,48 @@ var ACTION_VERBS = [
 var STOPWORDS = {};
 ("a,about,above,after,again,against,all,also,am,an,and,any,are,as,at,be,because,been,before,being,below,between,both,but,by,can,cannot,could,did,do,does,doing,down,during,each,few,for,from,further,had,has,have,having,he,her,here,hers,herself,him,himself,his,how,i,if,in,into,is,it,its,itself,join,like,me,more,most,my,myself,no,nor,not,of,off,on,once,only,or,other,ought,our,ours,ourselves,out,over,own,same,she,should,so,some,such,than,that,the,their,theirs,them,themselves,then,there,these,they,this,those,through,to,too,under,until,up,very,was,we,were,what,when,where,which,while,who,whom,why,with,would,you,your,yours,yourself,yourselves,will,within,across,per,via,including,plus,etc,us,team,candidate,role,looking,seeking,ideal,apply,able,ensure,help,work,working,years,year,experience,strong,good,great,proficient").split(",").forEach(function (w) { STOPWORDS[w] = true; });
 
+/* motion + a11y helpers */
+
+function reducedMotion() {
+  return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function announce(msg) {
+  var lr = document.getElementById("live-region");
+  if (lr) lr.textContent = msg;
+}
+
+/* animated 0–100 count-up for the ATS gauge (instant under reduced motion) */
+var scoreAnim = null;
+function animateScore(to) {
+  var num = document.getElementById("ats-number");
+  var ring = document.getElementById("ats-fill");
+  var C = 326.73; /* 2πr, r = 52 */
+  var color = to >= 80 ? "#15803d" : to >= 60 ? "#b45309" : "#b91c1c";
+  var from = parseInt(num.textContent, 10);
+  if (isNaN(from)) from = 0;
+
+  ring.style.strokeDashoffset = (C * (1 - to / 100)).toFixed(1);
+  ring.style.stroke = color;
+  num.style.color = color;
+
+  if (scoreAnim) cancelAnimationFrame(scoreAnim);
+  if (reducedMotion() || from === to) { num.textContent = to; return; }
+
+  var start = null, dur = 650;
+  function step(ts) {
+    if (!start) start = ts;
+    var p = Math.min((ts - start) / dur, 1);
+    var e = 1 - Math.pow(1 - p, 3); /* easeOutCubic — gentle settle */
+    num.textContent = Math.round(from + (to - from) * e);
+    if (p < 1) scoreAnim = requestAnimationFrame(step);
+  }
+  scoreAnim = requestAnimationFrame(step);
+}
+
+var SEC_LIST_IDS = { experience: "exp-list", education: "edu-list", projects: "proj-list", certifications: "cert-list" };
+var SEC_SINGULAR = { experience: "position", education: "education entry", projects: "project", certifications: "certification" };
+
 /* ---------------- state ---------------- */
 
 function blankEntry(sec) {
@@ -156,10 +198,11 @@ function fieldHTML(sec, idx, field, label, opts) {
   var type = opts.type || "text";
   var ph = opts.placeholder ? ' placeholder="' + esc(opts.placeholder) + '"' : "";
   var extra = opts.extra || "";
+  var nm = ' name="' + sec + "-" + field + "-" + idx + '" autocomplete="off"';
   if (type === "textarea") {
-    return '<label>' + esc(label) + '<textarea data-sec="' + sec + '" data-idx="' + idx + '" data-field="' + field + '" rows="' + (opts.rows || 4) + '"' + ph + extra + '>' + esc(val) + '</textarea></label>';
+    return '<label>' + esc(label) + '<textarea data-sec="' + sec + '" data-idx="' + idx + '" data-field="' + field + '" rows="' + (opts.rows || 4) + '"' + ph + extra + nm + '>' + esc(val) + '</textarea></label>';
   }
-  return '<label>' + esc(label) + '<input type="' + type + '" data-sec="' + sec + '" data-idx="' + idx + '" data-field="' + field + '" value="' + esc(val) + '"' + ph + extra + '></label>';
+  return '<label>' + esc(label) + '<input type="' + type + '" data-sec="' + sec + '" data-idx="' + idx + '" data-field="' + field + '" value="' + esc(val) + '"' + ph + extra + nm + '></label>';
 }
 
 function expEntryHTML(e, i) {
@@ -231,8 +274,12 @@ function renderEntries() {
 function addEntry(sec) {
   state[sec].push(blankEntry(sec));
   renderEntries();
+  var list = document.getElementById(SEC_LIST_IDS[sec]);
+  var last = list ? list.querySelector(".entry:last-child") : null;
+  if (last && !reducedMotion()) last.classList.add("is-entering");
   saveSoon();
   renderPreview();
+  announce("New " + (SEC_SINGULAR[sec] || "entry") + " added.");
 }
 
 function removeEntry(sec, idx) {
@@ -240,6 +287,7 @@ function removeEntry(sec, idx) {
   renderEntries();
   saveSoon();
   renderPreview();
+  announce("Removed " + (SEC_SINGULAR[sec] || "entry") + ".");
 }
 
 /* ---------------- resume HTML (preview) ---------------- */
@@ -398,15 +446,31 @@ function buildPlainText() {
   return L.join("\n").replace(/\n{3,}/g, "\n\n").trim() + "\n";
 }
 
+var prevTemplate = null;
+
 function renderPreview() {
   var resume = document.getElementById("resume");
-  resume.className = "resume template-" + state.template;
-  resume.innerHTML = buildResumeHTML();
+  var tplChanged = prevTemplate !== null && prevTemplate !== state.template;
+  prevTemplate = state.template;
 
-  /* template switcher active state */
+  if (tplChanged && !reducedMotion()) {
+    /* crossfade: paint the new template faded, then ease it in (double rAF, no layout reads) */
+    resume.className = "resume template-" + state.template + " is-switching";
+    resume.innerHTML = buildResumeHTML();
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { resume.classList.remove("is-switching"); });
+    });
+  } else {
+    resume.className = "resume template-" + state.template;
+    resume.innerHTML = buildResumeHTML();
+  }
+
+  /* template switcher selected state */
   var btns = document.querySelectorAll("#template-switch button");
   for (var i = 0; i < btns.length; i++) {
-    btns[i].classList.toggle("active", btns[i].getAttribute("data-template") === state.template);
+    var active = btns[i].getAttribute("data-template") === state.template;
+    btns[i].classList.toggle("active", active);
+    btns[i].setAttribute("aria-pressed", active ? "true" : "false");
   }
 
   /* filename hint */
@@ -522,11 +586,11 @@ function analyzeATS() {
     return DATE_RE.test(d.v.trim()) || (d.edu && /^\d{4}$/.test(d.v.trim()));
   });
   add("Dates in consistent MM/YYYY format", 5, datesOk,
-    "Use MM/YYYY for work dates (e.g. 06/2022) — never 'June 22' or '6/22'. Education may use YYYY.");
+    "Use MM/YYYY for work dates (e.g. 06/2022) — never \u2018June 22\u2019 or \u20186/22\u2019. Education may use YYYY.");
 
   /* 11. no references line */
   var refHit = /references available/i.test(buildPlainText());
-  add('No "References available on request"', 5, !refHit,
+  add("\u201CReferences available on request\u201D line absent", 5, !refHit,
     "Delete that line — it wastes space and every ATS guide flags it as outdated.");
 
   var score = checks.reduce(function (s, c) { return s + (c.pass ? c.weight : 0); }, 0);
@@ -535,10 +599,8 @@ function analyzeATS() {
 
 function renderATS() {
   var r = analyzeATS();
-  document.getElementById("ats-fill").style.width = r.score + "%";
+  animateScore(r.score);
   var num = document.getElementById("ats-number");
-  num.textContent = r.score;
-  num.style.color = r.score >= 80 ? "#15803d" : r.score >= 60 ? "#b45309" : "#b91c1c";
   var verdict = document.getElementById("ats-verdict");
   verdict.textContent =
     r.score >= 90 ? "Excellent — this resume should sail through ATS filters." :
@@ -599,7 +661,8 @@ function copyPlainText() {
   function done() {
     var btn = document.getElementById("btn-copy");
     var old = btn.textContent;
-    btn.textContent = "Copied ✓";
+    btn.textContent = "Copied \u2713";
+    announce("Plain-text resume copied to clipboard.");
     setTimeout(function () { btn.textContent = old; }, 1600);
   }
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -628,6 +691,7 @@ function loadSample() {
   renderEntries();
   save();
   renderPreview();
+  announce("Sample resume loaded.");
 }
 
 function clearAll() {
@@ -639,6 +703,7 @@ function clearAll() {
   renderPreview();
   document.getElementById("jd-input").value = "";
   document.getElementById("jd-results").hidden = true;
+  announce("Resume cleared.");
 }
 
 function populateStatic() {
@@ -698,7 +763,16 @@ function onClick(e) {
 
   var rm = t.closest('[data-action="remove"]');
   if (rm) {
-    removeEntry(rm.getAttribute("data-sec"), parseInt(rm.getAttribute("data-idx"), 10));
+    var sec = rm.getAttribute("data-sec");
+    var idx = parseInt(rm.getAttribute("data-idx"), 10);
+    var entryEl = rm.closest(".entry");
+    if (entryEl && !reducedMotion()) {
+      /* exit animation first, then remove from state */
+      entryEl.classList.add("is-leaving");
+      setTimeout(function () { removeEntry(sec, idx); }, 190);
+    } else {
+      removeEntry(sec, idx);
+    }
     return;
   }
 
